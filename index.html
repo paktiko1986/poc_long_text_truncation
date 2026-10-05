@@ -72,6 +72,9 @@
             line-height: 1.5;
             border: 1px solid #dde7f0;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+            /* ensure the RTL override is visible as intended, no unicode-bidi interference */
+            unicode-bidi: normal;
+            direction: ltr;
         }
         pre {
             background: #f9fcff;
@@ -135,6 +138,17 @@
         .footer-note a:hover {
             text-decoration: underline;
         }
+        .debug-hint {
+            margin-top: 6px;
+            font-size: 0.7rem;
+            color: #8899aa;
+            font-family: monospace;
+            text-align: left;
+            background: #f0f4fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px dashed #b8c9dd;
+        }
         @media (max-width: 600px) {
             .card { padding: 24px 20px; }
             h1 { font-size: 1.6rem; }
@@ -151,7 +165,11 @@
         
         <span class="label">Filename</span>
         <div class="filename-box" id="filenameDisplay">
+            <!-- This will be replaced by JavaScript with the exact RTL-override string -->
             this_is_a_very_long_filename_containing_sample_text_for_the_flask_server_&_this_is_a_very_long_filename_containing_sample_text_for_the_flask_server.txt
+        </div>
+        <div class="debug-hint" id="unicodeHint">
+            ⚠️ filename contains U+202E (RIGHT-TO-LEFT OVERRIDE) — display may be visually reordered
         </div>
 
         <h2>Content</h2>
@@ -166,7 +184,7 @@ eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
 in culpa qui officia deserunt mollit anim id est laborum.
 
 This file is served by a simple Flask web server.
-Visit to see this content rendered in the browser.</pre>
+Visit http://0.0.0.0:5000/ to see this content rendered in the browser.</pre>
 
         <button class="btn" id="downloadBtn">
             <i>⬇</i> Download File
@@ -179,9 +197,34 @@ Visit to see this content rendered in the browser.</pre>
 
     <script>
         (function() {
-            // ---- constants matching the original Flask app ----
-            const FILENAME = "this_is_a_very_long_filename_containing_sample_text_for_the_flask_server_&_this_is_a_very_long_filename_containing_sample_text_for_the_flask_server.txt";
+            // ---- FILENAME with non-ASCII character: U+202E (RIGHT-TO-LEFT OVERRIDE) ----
+            // We insert the RTL override character right in the middle of the filename.
+            // It makes the displayed text appear reversed from that point, but the actual
+            // string retains the original characters for download.
+            // Example: "this_is_a_very_long_filename_containing_sample_text_for_the_flask_server_&_this_is_a_very_long_filename_containing_sample_text_for_the_flask_server.txt"
+            // becomes with \u202e inserted before the second part.
+            
+            // Original base filename (without the override)
+            const baseFilename = "this_is_a_very_long_filename_containing_sample_text_for_the_flask_server_&_this_is_a_very_long_filename_containing_sample_text_for_the_flask_server.txt";
+            
+            // Insert U+202E after the first underscore after "flask_server_&_" or wherever.
+            // Let's insert it right after the "&_" part to make the second half appear reversed.
+            // We'll split and rejoin.
+            const marker = "&_this_is_a_very_long_filename_containing_sample_text_for_the_flask_server.txt";
+            // We want to insert \u202e right after the "&_" (i.e., before "this_is_a_very...")
+            // So the filename becomes: ...flask_server_&\u202ethis_is_a_very...
+            // Actually let's do something more noticeable: insert it before the second "this_is" segment.
+            // Let's define:
+            const part1 = "this_is_a_very_long_filename_containing_sample_text_for_the_flask_server_&_";
+            const part2 = "this_is_a_very_long_filename_containing_sample_text_for_the_flask_server.txt";
+            
+            // FILENAME with U+202E injected between part1 and part2
+            const FILENAME = part1 + "\u202e" + part2;
+            
+            // For clarity, log the codepoints of the filename (optional)
+            // console.log('FILENAME codepoints:', [...FILENAME].map(c => c.codePointAt(0).toString(16)).join(' '));
 
+            // ---- FILE CONTENT (exactly as in Flask version) ----
             const FILE_CONTENT = `Hello, World! This is a sample text file with a very long name.
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
@@ -193,14 +236,23 @@ eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
 in culpa qui officia deserunt mollit anim id est laborum.
 
 This file is served by a simple Flask web server.
-Visit https://paktiko1986.github.io/poc_long_text_truncation/ to see this content rendered in the browser.`;
+Visit http://0.0.0.0:5000/ to see this content rendered in the browser.`;
 
-            // ---- ensure the displayed content matches exactly (already in HTML, but double-check) ----
-            // It's already correct, but if we want to be safe we can set it programmatically.
-            // However we already have the correct content in the HTML pre and filename box.
-            // For consistency, I'll leave the HTML as is, but also make download use the exact same strings.
+            // ---- Update the displayed filename with the RTL-override version ----
+            const filenameDisplay = document.getElementById('filenameDisplay');
+            if (filenameDisplay) {
+                // Display the exact string with the override character.
+                // We use textContent to avoid HTML escaping, so the character is rendered.
+                filenameDisplay.textContent = FILENAME;
+            }
 
-            // ---- download functionality (pure client-side) ----
+            // ---- Update content display (already correct, but just to be safe) ----
+            const contentDisplay = document.getElementById('contentDisplay');
+            if (contentDisplay) {
+                contentDisplay.textContent = FILE_CONTENT;
+            }
+
+            // ---- Download functionality (client-side) ----
             const downloadBtn = document.getElementById('downloadBtn');
 
             downloadBtn.addEventListener('click', function() {
@@ -213,7 +265,7 @@ Visit https://paktiko1986.github.io/poc_long_text_truncation/ to see this conten
                 // Create a temporary anchor element
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = FILENAME;   // this sets the filename for download
+                a.download = FILENAME;   // <-- FILENAME now contains U+202E
 
                 // Append to body (needed for Firefox)
                 document.body.appendChild(a);
@@ -221,17 +273,14 @@ Visit https://paktiko1986.github.io/poc_long_text_truncation/ to see this conten
                 // Trigger click
                 a.click();
 
-                // Clean up: remove the anchor and revoke the blob URL
+                // Clean up
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             });
 
-            // Optional: add a small fallback if JavaScript is disabled? 
-            // Not needed; download button will simply not work without JS.
-            // But we can add a data URI fallback? Not necessary for GitHub Pages.
-            // Just a friendly note.
-
-            // Also handle if someone wants to see the raw file in new tab? Not needed.
+            // Small visual hint: if the filename contains the RTL char, show the hint.
+            // The hint is always visible anyway, but we could hide it if not present.
+            // It's fine.
         })();
     </script>
 </body>
