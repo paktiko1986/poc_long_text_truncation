@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text File Server · static</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            max-width: 900px;
+            width: 100%;
+            border-radius: 20px;
+            padding: 36px 40px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s;
+            border: 1px solid #e9ecf0;
+        }
+        h1 {
+            color: #1a2634;
+            font-weight: 600;
+            font-size: 2rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h1 span {
+            font-size: 2rem;
+        }
+        h2 {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            font-weight: 500;
+            margin-top: 28px;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid #eef2f6;
+            padding-bottom: 6px;
+        }
+        .label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            display: block;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .filename-box {
+            background: #f2f6fc;
+            border-left: 4px solid #0066cc;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            color: #1e3a5f;
+            line-height: 1.5;
+            border: 1px solid #dde7f0;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+        }
+        pre {
+            background: #f9fcff;
+            border: 1px solid #dbe4ed;
+            border-radius: 12px;
+            padding: 22px 26px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.7;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            color: #1f2a36;
+            margin: 8px 0 10px;
+            overflow-x: auto;
+            box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.02);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+            padding: 14px 32px;
+            background: #0066cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(0, 102, 204, 0.25);
+            letter-spacing: 0.3px;
+        }
+        .btn:hover {
+            background: #0052a3;
+            box-shadow: 0 8px 18px rgba(0, 82, 163, 0.35);
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 10px rgba(0, 82, 163, 0.3);
+        }
+        .btn i {
+            font-style: normal;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        .footer-note {
+            margin-top: 24px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-align: center;
+            border-top: 1px solid #ecf0f3;
+            padding-top: 18px;
+        }
+        .footer-note a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .footer-note a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            .card { padding: 24px 20px; }
+            h1 { font-size: 1.6rem; }
+            pre { padding: 16px; font-size: 0.8rem; }
+            .filename-box { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>
+            <span>📄</span> Text File Server
+        </h1>
+        
+        <span class="label">Filename</span>
+        <div class="filename-box" id="filenameDisplay">
+            this_is_a_very_long_filename_containing_sample_text_for_the_flask_server_&_this_is_a_very_long_filename_containing_sample_text_for_the_flask_server.txt
+        </div>
+
+        <h2>Content</h2>
+        <pre id="contentDisplay">Hello, World! This is a sample text file with a very long name.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+in culpa qui officia deserunt mollit anim id est laborum.
+
+This file is served by a simple Flask web server.
+Visit http://0.0.0.0:5000/ to see this content rendered in the browser.</pre>
+
+        <button class="btn" id="downloadBtn">
+            <i>⬇</i> Download File
+        </button>
+
+        <div class="footer-note">
+            ⚡ Static GitHub Pages version — download works client‑side
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---- constants matching the original Flask app ----
+            const FILENAME = "this_is_a_very_long_filename_containing_sample_text_for_the_flask_server_&_this_is_a_very_long_filename_containing_sample_text_for_the_flask_server.txt";
+
+            const FILE_CONTENT = `Hello, World! This is a sample text file with a very long name.
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+in culpa qui officia deserunt mollit anim id est laborum.
+
+This file is served by a simple Flask web server.
+Visit http://0.0.0.0:5000/ to see this content rendered in the browser.`;
+
+            // ---- ensure the displayed content matches exactly (already in HTML, but double-check) ----
+            // It's already correct, but if we want to be safe we can set it programmatically.
+            // However we already have the correct content in the HTML pre and filename box.
+            // For consistency, I'll leave the HTML as is, but also make download use the exact same strings.
+
+            // ---- download functionality (pure client-side) ----
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            downloadBtn.addEventListener('click', function() {
+                // Create a Blob with the text content (UTF-8)
+                const blob = new Blob([FILE_CONTENT], { type: 'text/plain;charset=utf-8' });
+
+                // Create a temporary object URL
+                const url = URL.createObjectURL(blob);
+
+                // Create a temporary anchor element
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = FILENAME;   // this sets the filename for download
+
+                // Append to body (needed for Firefox)
+                document.body.appendChild(a);
+
+                // Trigger click
+                a.click();
+
+                // Clean up: remove the anchor and revoke the blob URL
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            // Optional: add a small fallback if JavaScript is disabled? 
+            // Not needed; download button will simply not work without JS.
+            // But we can add a data URI fallback? Not necessary for GitHub Pages.
+            // Just a friendly note.
+
+            // Also handle if someone wants to see the raw file in new tab? Not needed.
+        })();
+    </script>
+</body>
+</html>
